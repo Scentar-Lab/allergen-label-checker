@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>香精過敏原標示計算器 | Scentar</title>
+  <style>
+    body {font-family: Arial, sans-serif;background:#f3f3f3;padding:10px;margin:0;color:#333;}
+    header{text-align:center;margin-bottom:10px;}
+    header img{width:160px;max-width:80%;}
+    header h2{font-size:20px;margin-top:5px;color:#444;}
+    .input-section{text-align:center;margin:10px auto;}
+    label,select,input[type="number"]{margin:6px auto;padding:5px;width:90%;max-width:400px;display:block;font-size:14px;}
+    .mode-buttons{display:flex;justify-content:center;flex-wrap:wrap;margin:10px auto;}
+    .mode-buttons button{border:1px solid #000;background:#fff;color:#000;padding:6px 12px;margin:5px;border-radius:10px;cursor:pointer;font-size:14px;}
+    .mode-buttons button.active{background:#000;color:#fff;}
+    table{width:100%;font-size:11px;border-collapse:collapse;margin-top:15px;}
+    th,td{padding:2px;border:1px solid #ccc;text-align:center;}
+    th{background-color:#e6e6e6;}
+    .need-label{color:red;font-weight:bold;}
+    .no-label{color:green;}
+    #resultList{margin-top:10px;padding:8px;background:#fff;border:1px solid #ccc;font-size:13px;}
+    #copyBtn,#analyzeBtn{margin:8px auto;padding:6px 12px;display:block;cursor:pointer;font-size:14px;}
+    footer{margin-top:20px;font-size:12px;color:#666;text-align:center;}
+    @media screen and (min-width:768px){body{padding:20px;}}
+  </style>
+</head>
+<body>
+  <header>
+    <img src="logo.png" alt="Scentar Logo">
+    <h2>香精過敏原標示計算器</h2>
+  </header>
+
+  <div class="input-section">
+    <label>產品型態：
+      <select id="productType">
+        <option value="leaveon">留置型（乳液、體香噴霧、防曬、香水等）</option>
+        <option value="rinseoff">淋洗型（洗髮精、沐浴乳、洗面乳、肥皂等）</option>
+      </select>
+    </label>
+
+    <div class="mode-buttons">
+      <button onclick="switchMode(1)">1 支香精</button>
+      <button onclick="switchMode(2)">2 支香精</button>
+      <button onclick="switchMode(3)">3 支香精</button>
+    </div>
+
+    <label id="fragranceLabel">香精在產品中的添加濃度（%）：
+      <input type="number" id="fragrancePercent" value="1.5" step="0.01" />
+    </label>
+    <label id="fragranceALabel" style="display:none">香精 A 添加濃度（%）：
+      <input type="number" id="percentA" value="1.0" step="0.01" />
+    </label>
+    <label id="fragranceBLabel" style="display:none">香精 B 添加濃度（%）：
+      <input type="number" id="percentB" value="0.5" step="0.01" />
+    </label>
+    <label id="fragranceCLabel" style="display:none">香精 C 添加濃度（%）：
+      <input type="number" id="percentC" value="0.5" step="0.01" />
+    </label>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>成分名稱</th>
+        <th>CAS No.</th>
+        <th class="col-single">含量 (%)</th>
+        <th class="col-double" style="display:none">A 含量 (%)</th>
+        <th class="col-double" style="display:none">B 含量 (%)</th>
+        <th class="col-triple" style="display:none">A 含量 (%)</th>
+        <th class="col-triple" style="display:none">B 含量 (%)</th>
+        <th class="col-triple" style="display:none">C 含量 (%)</th>
+        <th>總成品濃度 (%)</th>
+        <th>是否需標示</th>
+      </tr>
+    </thead>
+    <tbody id="allergenTableBody"></tbody>
+  </table>
+
+  <button id="analyzeBtn" onclick="analyzeAllergens()">分析是否需標示</button>
+
+  <h3>需標示項目：</h3>
+  <div id="resultList">尚未分析</div>
+  <button id="copyBtn" onclick="copyToClipboard()">複製標示項目</button>
+
+  <footer>
+    本工具依據衛生福利部食品藥物管理署公告《化粧品應標示之特定香精或香料成分》草案，民國114年1月21日預告版本設計。<br/>
+    &copy; 2025 Scentar. All rights reserved.
+  </footer>
+
+  <script>
+    let currentMode = 1;
+    const allergens = [
+      ["Alpha-Isomethyl Ionone", "127-51-5"],
+      ["Amyl Cinnamal", "122-40-7"],
+      ["Amylcinnamyl Alcohol", "101-85-9"],
+      ["Anise Alcohol", "105-13-5"],
+      ["Benzyl Alcohol", "100-51-6"],
+      ["Benzyl Benzoate", "120-51-4"],
+      ["Benzyl Cinnamate", "103-41-3"],
+      ["Benzyl Salicylate", "118-58-1"],
+      ["Cinnamal", "104-55-2"],
+      ["Cinnamyl Alcohol", "104-54-1"],
+      ["Citral", "5392-40-5"],
+      ["Citronellol", "106-22-9"],
+      ["Coumarin", "91-64-5"],
+      ["Eugenol", "97-53-0"],
+      ["Evernia Furfuracea Extract", "90028-67-4"],
+      ["Evernia Prunastri Extract", "90028-68-5"],
+      ["Farnesol", "4602-84-0"],
+      ["Geraniol", "106-24-1"],
+      ["Hexyl Cinnamal", "101-86-0"],
+      ["Hydroxycitronellal", "107-75-5"],
+      ["Isoeugenol", "97-54-1"],
+      ["Limonene", "5989-27-5"],
+      ["Linalool", "78-70-6"],
+      ["Methyl 2-Octynoate", "111-12-6"]
+    ].sort((a, b) => a[0].localeCompare(b[0]));
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-buttons button').forEach((btn, idx) => {
+        btn.classList.toggle('active', idx === mode - 1);
+      });
+      document.getElementById("fragranceLabel").style.display = (mode === 1) ? 'block' : 'none';
+      document.getElementById("fragranceALabel").style.display = (mode >= 2) ? 'block' : 'none';
+      document.getElementById("fragranceBLabel").style.display = (mode >= 2) ? 'block' : 'none';
+      document.getElementById("fragranceCLabel").style.display = (mode === 3) ? 'block' : 'none';
+
+      document.querySelectorAll('.col-single').forEach(e => e.style.display = (mode === 1) ? '' : 'none');
+      document.querySelectorAll('.col-double').forEach(e => e.style.display = (mode === 2) ? '' : 'none');
+      document.querySelectorAll('.col-triple').forEach(e => e.style.display = (mode === 3) ? '' : 'none');
+
+      generateTable();
+    }
+
+    function generateTable() {
+      const tbody = document.getElementById("allergenTableBody");
+      tbody.innerHTML = "";
+      allergens.forEach((item, index) => {
+        const row = document.createElement("tr");
+        row.innerHTML = \`
+          <td>\${item[0]}</td>
+          <td>\${item[1]}</td>
+          <td class="col-single" style="display:\${currentMode === 1 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="single-\${index}" style="width:60px">
+          </td>
+          <td class="col-double" style="display:\${currentMode === 2 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="a-\${index}" style="width:60px">
+          </td>
+          <td class="col-double" style="display:\${currentMode === 2 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="b-\${index}" style="width:60px">
+          </td>
+          <td class="col-triple" style="display:\${currentMode === 3 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="a-\${index}" style="width:60px">
+          </td>
+          <td class="col-triple" style="display:\${currentMode === 3 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="b-\${index}" style="width:60px">
+          </td>
+          <td class="col-triple" style="display:\${currentMode === 3 ? '' : 'none'}">
+            <input type="number" step="0.0001" min="0" id="c-\${index}" style="width:60px">
+          </td>
+          <td id="final-\${index}">--</td>
+          <td id="result-\${index}">--</td>
+        \`;
+        tbody.appendChild(row);
+      });
+    }
+
+    function analyzeAllergens() {
+      const type = document.getElementById("productType").value;
+      const threshold = type === "leaveon" ? 0.001 : 0.01;
+      const results = [];
+
+      allergens.forEach((item, index) => {
+        let total = 0;
+        if (currentMode === 1) {
+          const percent = parseFloat(document.getElementById("fragrancePercent").value) || 0;
+          const singleVal = parseFloat(document.getElementById(\`single-\${index}\`).value) || 0;
+          total = singleVal * percent / 100;
+        } else if (currentMode === 2) {
+          const percentA = parseFloat(document.getElementById("percentA").value) || 0;
+          const percentB = parseFloat(document.getElementById("percentB").value) || 0;
+          const aVal = parseFloat(document.getElementById(\`a-\${index}\`).value) || 0;
+          const bVal = parseFloat(document.getElementById(\`b-\${index}\`).value) || 0;
+          total = (aVal * percentA + bVal * percentB) / 100;
+        } else if (currentMode === 3) {
+          const percentA = parseFloat(document.getElementById("percentA").value) || 0;
+          const percentB = parseFloat(document.getElementById("percentB").value) || 0;
+          const percentC = parseFloat(document.getElementById("percentC").value) || 0;
+          const aVal = parseFloat(document.getElementById(\`a-\${index}\`).value) || 0;
+          const bVal = parseFloat(document.getElementById(\`b-\${index}\`).value) || 0;
+          const cVal = parseFloat(document.getElementById(\`c-\${index}\`).value) || 0;
+          total = (aVal * percentA + bVal * percentB + cVal * percentC) / 100;
+        }
+
+        document.getElementById(\`final-\${index}\`).innerText = total.toFixed(4);
+        const needLabel = total >= threshold;
+        document.getElementById(\`result-\${index}\`).innerHTML =
+          needLabel ? '<span class="need-label">需標示</span>' : '<span class="no-label">無需標示</span>';
+        if (needLabel) results.push(item[0]);
+      });
+
+      document.getElementById("resultList").innerText = results.length ? results.join(", ") : "無需標示成分";
+    }
+
+    function copyToClipboard() {
+      const text = document.getElementById("resultList").innerText;
+      navigator.clipboard.writeText(text).then(() => alert("已複製到剪貼簿"));
+    }
+
+    switchMode(1);
+  </script>
+</body>
+</html>
