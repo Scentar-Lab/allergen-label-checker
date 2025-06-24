@@ -1,0 +1,1 @@
+# allergen-label-checker
