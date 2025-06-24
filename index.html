@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
+  <meta name="description" content="免費香精過敏原標示計算器，依據台灣衛福部最新草案自動分析是否需標示成分。">
+  <meta name="keywords" content="香精, 過敏原, 標示, 仿單, 化妝品法規, IFRA, 化粧品, Scentar, Allergen, 計算器, 馨研">
+  <meta name="author" content="Scentar">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>香精過敏原標示計算器</title>
@@ -17,7 +20,7 @@
       margin-bottom: 10px;
     }
     header img {
-      width: 160px;
+      width: 200px;
       max-width: 80%;
     }
     header h2 {
@@ -104,6 +107,15 @@
       }
     }
   </style>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-XXXXXXXXXX');
+  </script>
 </head>
 <body>
   <header>
@@ -232,13 +244,13 @@
             <input type="number" step="0.0001" min="0" id="b-${index}" style="width:60px">
           </td>
           <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="a-${index}" style="width:60px">
+            <input type="number" step="0.0001" min="0" id="triple-a-${index}" style="width:60px">
           </td>
           <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="b-${index}" style="width:60px">
+            <input type="number" step="0.0001" min="0" id="triple-b-${index}" style="width:60px">
           </td>
           <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="c-${index}" style="width:60px">
+            <input type="number" step="0.0001" min="0" id="triple-c-${index}" style="width:60px">
           </td>
           <td id="final-${index}">--</td>
           <td id="result-${index}">--</td>
@@ -268,9 +280,9 @@
           const percentA = parseFloat(document.getElementById("percentA").value) || 0;
           const percentB = parseFloat(document.getElementById("percentB").value) || 0;
           const percentC = parseFloat(document.getElementById("percentC").value) || 0;
-          const aVal = parseFloat(document.getElementById(`a-${index}`).value) || 0;
-          const bVal = parseFloat(document.getElementById(`b-${index}`).value) || 0;
-          const cVal = parseFloat(document.getElementById(`c-${index}`).value) || 0;
+          const aVal = parseFloat(document.getElementById(`triple-a-${index}`).value) || 0;
+          const bVal = parseFloat(document.getElementById(`triple-b-${index}`).value) || 0;
+          const cVal = parseFloat(document.getElementById(`triple-c-${index}`).value) || 0;
           total = (aVal * percentA + bVal * percentB + cVal * percentC) / 100;
         }
 
