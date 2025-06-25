@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta name="description" content="免費香精過敏原標示計算器，依據台灣衛福部食藥署最新草案自動分析是否需標示成分。">
+  <meta name="description" content="免費香精過敏原標示計算器，依據台灣衛福部最新草案自動分析是否需標示成分。">
   <meta name="keywords" content="香精, 過敏原, 標示, 仿單, 化妝品法規, IFRA, 化粧品, Scentar, Allergen, 計算器, 馨研">
   <meta name="author" content="Scentar">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>香精過敏原標示計算器</title>
+  <script src="NotoSansTC-Medium.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  
+  
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,7 +25,7 @@
       margin-bottom: 10px;
     }
     header img {
-      width: 20px;
+      width: 200px;
       max-width: 80%;
     }
     header h2 {
@@ -119,7 +124,7 @@
 </head>
 <body>
   <header>
-    <img src="logo-grey.png" alt="公司Logo">
+    <img src="logo.png" alt="公司Logo">
     <h2>香精過敏原標示計算器</h2>
   </header>
 
@@ -174,12 +179,95 @@
   <h3>需標示項目：</h3>
   <div id="resultList">尚未分析</div>
   <button id="copyBtn" onclick="copyToClipboard()">複製標示項目</button>
+  <div style="margin: 12px auto; text-align: center;">
+  <label style="display:inline-block; margin-right: 8px;">產品名稱：
+    <input type="text" id="productName" placeholder="請輸入產品名稱" style="width:200px;">
+  </label>
+  <label style="display:inline-block; margin-right: 8px; ">香精名稱與比例：<br>
+    A 名稱：<input type="text" id="fragranceNameA" placeholder="例如：花香A" style="width:100px"> 比例：<input type="number" id="pdfPercentA" step="0.01" style="width:60px"> %<br>
+    B 名稱：<input type="text" id="fragranceNameB" placeholder="例如：木質B" style="width:100px"> 比例：<input type="number" id="pdfPercentB" step="0.01" style="width:60px"> %<br>
+    C 名稱：<input type="text" id="fragranceNameC" placeholder="例如：柑橘C" style="width:100px"> 比例：<input type="number" id="pdfPercentC" step="0.01" style="width:60px"> %
+  </label>
+</div>
+<div style="text-align: center;">
+  <button onclick="generatePDFReport()">下載報告</button>
+</div>
 
   <footer>
     本工具依據衛生福利部食品藥物管理署公告《化粧品應標示之特定香精或香料成分》草案，民國114年1月21日預告版本設計。<br>
     技術問題聯絡信箱：nicolehsu1103@gmail.com<br>
     Powered by Scentar.
   </footer>
+  
+  <script>
+  async function generatePDFReport() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.addFileToVFS("NotoSansTC.ttf", NotoSansTCMedium); // 這是全域變數名稱
+    doc.addFont("NotoSansTC.ttf", "NotoSansTC", "normal");
+    doc.setFont("NotoSansTC");
+
+    const productName = document.getElementById("productName")?.value || "未輸入產品名稱";
+    const productTypeText = document.getElementById("productType").selectedOptions[0].text;
+    const timestamp = new Date().toLocaleString();
+
+    const nameA = document.getElementById("fragranceNameA")?.value || "A";
+    const nameB = document.getElementById("fragranceNameB")?.value || "B";
+    const nameC = document.getElementById("fragranceNameC")?.value || "C";
+
+    // 根據模式判斷香精比例
+    let percentA = "0", percentB = "0", percentC = "0";
+    if (currentMode === 1) {
+      percentA = document.getElementById("fragrancePercent")?.value || "0";
+    } else if (currentMode === 2) {
+      percentA = document.getElementById("percentA")?.value || document.getElementById("pdfPercentA")?.value || "0";
+      percentB = document.getElementById("percentB")?.value || document.getElementById("pdfPercentB")?.value || "0";
+    } else if (currentMode === 3) {
+      percentA = document.getElementById("percentA")?.value || document.getElementById("pdfPercentA")?.value || "0";
+      percentB = document.getElementById("percentB")?.value || document.getElementById("pdfPercentB")?.value || "0";
+      percentC = document.getElementById("percentC")?.value || document.getElementById("pdfPercentC")?.value || "0";
+    }
+
+    doc.setFontSize(14);
+    doc.text("香精過敏原標示分析報告", 14, 15);
+    doc.setFontSize(10);
+    doc.text(`產品名稱：${productName}`, 14, 25);
+    doc.text(`產品型態：${productTypeText}`, 14, 30);
+    doc.text(`香精比例：${nameA} = ${percentA}%, ${nameB} = ${percentB}%, ${nameC} = ${percentC}%`, 14, 35);
+    doc.text(`分析時間：${timestamp}`, 14, 40);
+
+    const rows = [];
+    const table = document.getElementById("allergenTableBody");
+    for (let i = 0; i < table.rows.length; i++) {
+      const cells = table.rows[i].cells;
+      const name = cells[0].innerText;
+      const cas = cells[1].innerText;
+      const final = cells[cells.length - 2].innerText;
+      const result = cells[cells.length - 1].innerText;
+      rows.push([name, cas, final, result]);
+    }
+
+    doc.autoTable({
+      startY: 45,
+      head: [["成分名稱", "CAS No.", "總成品濃度 (%)", "是否需標示"]],
+      body: rows,
+      styles: {
+        fontSize: 8,
+        font: 'NotoSansTC',
+        fontStyle: 'normal',
+        textColor: [0, 0, 0],
+        halign: 'center'
+      },
+      headStyles: { fillColor: [230, 230, 230] },
+    });
+
+    doc.setFontSize(9);
+    doc.text("Powered by Scentar", 105, doc.internal.pageSize.height - 10, { align: "center" });
+    doc.save(`${productName || '分析結果'}.pdf`);
+  }
+</script>
+
 
   <script>
     let currentMode = 1;
