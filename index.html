@@ -1,396 +1,127 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta name="description" content="免費香精過敏原標示計算器，依據台灣衛福部最新草案自動分析是否需標示成分。">
-  <meta name="keywords" content="香精, 過敏原, 標示, 仿單, 化妝品法規, IFRA, 化粧品, Scentar, Allergen, 計算器, 馨研">
-  <meta name="author" content="Scentar">
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>香精過敏原標示計算器</title>
-  <script src="NotoSansTC-Medium.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-  
-  
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="香精過敏原標示計算器 - 說明與工具入口頁">
+  <title>香精過敏原標示計算器 - 工具說明頁</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f3f3f3;
-      padding: 10px;
-      margin: 0;
+      background-color: #f8f8f8;
       color: #333;
+      padding: 20px;
+      line-height: 1.6;
     }
-    header {
+    h1, h2 {
       text-align: center;
-      margin-bottom: 10px;
+      color: #111;
     }
-    header img {
-      width: 200px;
-      max-width: 80%;
-    }
-    header h2 {
-      font-size: 20px;
-      margin-top: 5px;
-      color: #444;
-    }
-    .input-section {
+    h1 {
       text-align: center;
-      margin: 10px auto;
+      color: #111;
+      font-size: 28px; /* 原本預設會較大，這裡明確設定 */
     }
-    label, select, input[type="number"] {
-      margin: 6px auto;
-      padding: 5px;
-      width: 90%;
-      max-width: 400px;
-      display: block;
-      font-size: 14px;
+
+    h2 {
+      text-align: center;
+      color: #111;
+      font-size: 16px; /* 比 h1 小一點 */
     }
-    .mode-buttons {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin: 10px auto;
+
+    .logo-container {
+      text-align: center;
+      margin-bottom: 20px;
     }
-    .mode-buttons button {
-      border: 1px solid #000;
+    .logo-container img {
+      width: 180px;
+      height: auto;
+      max-width: 90%;
+    }
+
+    .section {
+      max-width: 800px;
+      margin: 0 auto 30px auto;
       background: #fff;
-      color: #000;
-      padding: 6px 12px;
-      margin: 5px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 14px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
-    .mode-buttons button.active {
-      background: #000;
+
+    .btn-start {
+      display: block;
+      width: fit-content;
+      margin: 16px auto 30px;
+      padding: 14px 28px;
+      font-size: 18px;
       color: #fff;
+      background-color: #000;
+      text-decoration: none;
+      border-radius: 12px;
     }
-    table {
-      width: 100%;
-      font-size: 15px;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-    th, td {
-      padding: 2px;
-      border: 1px solid #ccc;
+
+    .footer {
       text-align: center;
-    }
-    th {
-      background-color: #e6e6e6;
-    }
-    .need-label {
-      color: red;
-      font-weight: bold;
-    }
-    .no-label {
-      color: green;
-    }
-    #resultList {
-      margin-top: 10px;
-      padding: 8px;
-      background: #fff;
-      border: 1px solid #ccc;
-      font-size: 13px;
-    }
-    #copyBtn, #analyzeBtn {
-      margin: 8px auto;
-      padding: 6px 12px;
-      display: block;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    footer {
-      margin-top: 20px;
       font-size: 12px;
-      color: #666;
-      text-align: center;
-    }
-    @media screen and (min-width: 768px) {
-      body {
-        padding: 20px;
-      }
+      color: #888;
+      margin-top: 40px;
     }
   </style>
-  <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-  <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-XXXXXXXXXX');
-  </script>
 </head>
 <body>
-  <header>
-    <img src="logo.png" alt="公司Logo">
-    <h2>香精過敏原標示計算器</h2>
-  </header>
-
-  <div class="input-section">
-    <label>產品型態：
-      <select id="productType">
-        <option value="leaveon">留置型（香水、乳液、體香噴霧、防曬等）</option>
-        <option value="rinseoff">淋洗型（洗髮精、沐浴乳、洗面乳、肥皂等）</option>
-      </select>
-    </label>
-
-    <div class="mode-buttons">
-      <button onclick="switchMode(1)">1 支香精</button>
-      <button onclick="switchMode(2)">2 支香精</button>
-      <button onclick="switchMode(3)">3 支香精</button>
-    </div>
-
-    <label id="fragranceLabel">香精在產品中的添加濃度（%）：
-      <input type="number" id="fragrancePercent" value="1.5" step="0.01" />
-    </label>
-    <label id="fragranceALabel" style="display:none">香精 A 添加濃度（%）：
-      <input type="number" id="percentA" value="1.0" step="0.01" />
-    </label>
-    <label id="fragranceBLabel" style="display:none">香精 B 添加濃度（%）：
-      <input type="number" id="percentB" value="0.5" step="0.01" />
-    </label>
-    <label id="fragranceCLabel" style="display:none">香精 C 添加濃度（%）：
-      <input type="number" id="percentC" value="0.5" step="0.01" />
-    </label>
+  <!-- LOGO 區塊 -->
+  <div class="logo-container">
+    <img src="logo.png" alt="Scentar Logo">
   </div>
 
-  <table>
-    <thead>
-      <tr>
-        <th>成分名稱</th>
-        <th>CAS No.</th>
-        <th class="col-single">含量 (%)</th>
-        <th class="col-double" style="display:none">A 含量 (%)</th>
-        <th class="col-double" style="display:none">B 含量 (%)</th>
-        <th class="col-triple" style="display:none">A 含量 (%)</th>
-        <th class="col-triple" style="display:none">B 含量 (%)</th>
-        <th class="col-triple" style="display:none">C 含量 (%)</th>
-        <th>總成品濃度 (%)</th>
-        <th>是否需標示</th>
-      </tr>
-    </thead>
-    <tbody id="allergenTableBody"></tbody>
-  </table>
+  <h1>香精過敏原標示計算器</h1>
+  <h2>由馨研有限公司 Scentar 開發</h2>
+  <a href="https://bit.ly/scentar-allergen-calculator" target="_blank" class="btn-start">開始使用工具 →</a>
 
-  <button id="analyzeBtn" onclick="analyzeAllergens()">分析是否需標示</button>
+  <div class="section">
+    <h3>🔍 工具簡介</h3>
+    <p>
+      本工具依據台灣衛福部食藥署《化粧品應標示之特定香精或香料成分》草案（民國114年1月預告版）設計，
+      幫助使用者根據香精中過敏原濃度自動分析是否需要在成品上標示。
+    </p>
+  </div>
 
-  <h3>需標示項目：</h3>
-  <div id="resultList">尚未分析</div>
-  <button id="copyBtn" onclick="copyToClipboard()">複製標示項目</button>
-  <div style="margin: 12px auto; text-align: center;">
-  <label style="display:inline-block; margin-right: 8px;">產品名稱：
-    <input type="text" id="productName" placeholder="請輸入產品名稱" style="width:200px;">
-  </label>
-  <label style="display:inline-block; margin-right: 8px; ">香精名稱與比例：<br>
-    A 名稱：<input type="text" id="fragranceNameA" placeholder="例如：花香A" style="width:100px"> 比例：<input type="number" id="pdfPercentA" step="0.01" style="width:60px"> %<br>
-    B 名稱：<input type="text" id="fragranceNameB" placeholder="例如：木質B" style="width:100px"> 比例：<input type="number" id="pdfPercentB" step="0.01" style="width:60px"> %<br>
-    C 名稱：<input type="text" id="fragranceNameC" placeholder="例如：柑橘C" style="width:100px"> 比例：<input type="number" id="pdfPercentC" step="0.01" style="width:60px"> %
-  </label>
-</div>
-<div style="text-align: center;">
-  <button onclick="generatePDFReport()">下載報告</button>
-</div>
+  <div class="section">
+    <h3>⚙️ 操作步驟</h3>
+    <ol>
+      <li>選擇型態與輸入各香精比例</li>
+      <li>系統自動計算各成分總濃度</li>
+      <li>一鍵查看是否需標示</li>
+      <li>一鍵複製應標示之過敏原成分</li>
+      <li>輸入品名，並可一鍵產出 PDF 報告</li>
+    </ol>
+  </div>
 
-  <footer>
-    本工具依據衛生福利部食品藥物管理署公告《化粧品應標示之特定香精或香料成分》草案，民國114年1月21日預告版本設計。<br>
-    技術問題聯絡信箱：nicolehsu1103@gmail.com<br>
-    Powered by Scentar.
-  </footer>
+  <div class="section">
+    <h3>🎯 適用對象</h3>
+    <ul>
+      <li>化妝品研發人員</li>
+      <li>香氛、保養品品牌</li>
+      <li>香精/原料業務</li>
+      <li>手做香氛保養品人士</li>
+      <li>學生與教學使用</li>
+    </ul>
+    <p>※ 本工具為非商業用途之免費開源工具。</p>
+  </div>
+
+  <div class="section">
+    <h3>📌 免責聲明</h3>
+    <p>
+      本工具僅供學術與參考用途，計算邏輯基於草案條文與實務推估，結果不代表官方檢驗或法律依據。
+      使用者應自行判斷最終產品標示需求，並對其標示正確性負責。
+    </p>
+  </div>
+
   
-  <script>
-  async function generatePDFReport() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
 
-    doc.addFileToVFS("NotoSansTC.ttf", NotoSansTCMedium); // 這是全域變數名稱
-    doc.addFont("NotoSansTC.ttf", "NotoSansTC", "normal");
-    doc.setFont("NotoSansTC");
-
-    const productName = document.getElementById("productName")?.value || "未輸入產品名稱";
-    const productTypeText = document.getElementById("productType").selectedOptions[0].text;
-    const timestamp = new Date().toLocaleString();
-
-    const nameA = document.getElementById("fragranceNameA")?.value || "A";
-    const nameB = document.getElementById("fragranceNameB")?.value || "B";
-    const nameC = document.getElementById("fragranceNameC")?.value || "C";
-
-    // 根據模式判斷香精比例
-    let percentA = "0", percentB = "0", percentC = "0";
-    if (currentMode === 1) {
-      percentA = document.getElementById("fragrancePercent")?.value || "0";
-    } else if (currentMode === 2) {
-      percentA = document.getElementById("percentA")?.value || document.getElementById("pdfPercentA")?.value || "0";
-      percentB = document.getElementById("percentB")?.value || document.getElementById("pdfPercentB")?.value || "0";
-    } else if (currentMode === 3) {
-      percentA = document.getElementById("percentA")?.value || document.getElementById("pdfPercentA")?.value || "0";
-      percentB = document.getElementById("percentB")?.value || document.getElementById("pdfPercentB")?.value || "0";
-      percentC = document.getElementById("percentC")?.value || document.getElementById("pdfPercentC")?.value || "0";
-    }
-
-    doc.setFontSize(14);
-    doc.text("香精過敏原標示分析報告", 14, 15);
-    doc.setFontSize(10);
-    doc.text(`產品名稱：${productName}`, 14, 25);
-    doc.text(`產品型態：${productTypeText}`, 14, 30);
-    doc.text(`香精比例：${nameA} = ${percentA}%, ${nameB} = ${percentB}%, ${nameC} = ${percentC}%`, 14, 35);
-    doc.text(`分析時間：${timestamp}`, 14, 40);
-
-    const rows = [];
-    const table = document.getElementById("allergenTableBody");
-    for (let i = 0; i < table.rows.length; i++) {
-      const cells = table.rows[i].cells;
-      const name = cells[0].innerText;
-      const cas = cells[1].innerText;
-      const final = cells[cells.length - 2].innerText;
-      const result = cells[cells.length - 1].innerText;
-      rows.push([name, cas, final, result]);
-    }
-
-    doc.autoTable({
-      startY: 45,
-      head: [["成分名稱", "CAS No.", "總成品濃度 (%)", "是否需標示"]],
-      body: rows,
-      styles: {
-        fontSize: 8,
-        font: 'NotoSansTC',
-        fontStyle: 'normal',
-        textColor: [0, 0, 0],
-        halign: 'center'
-      },
-      headStyles: { fillColor: [230, 230, 230] },
-    });
-
-    doc.setFontSize(9);
-    doc.text("Powered by Scentar", 105, doc.internal.pageSize.height - 10, { align: "center" });
-    doc.save(`${productName || '分析結果'}.pdf`);
-  }
-</script>
-
-
-  <script>
-    let currentMode = 1;
-    const allergens = [
-      ["Alpha-Isomethyl Ionone", "127-51-5"],
-      ["Amyl Cinnamal", "122-40-7"],
-      ["Amylcinnamyl Alcohol", "101-85-9"],
-      ["Anise Alcohol", "105-13-5"],
-      ["Benzyl Alcohol", "100-51-6"],
-      ["Benzyl Benzoate", "120-51-4"],
-      ["Benzyl Cinnamate", "103-41-3"],
-      ["Benzyl Salicylate", "118-58-1"],
-      ["Cinnamal", "104-55-2"],
-      ["Cinnamyl Alcohol", "104-54-1"],
-      ["Citral", "5392-40-5"],
-      ["Citronellol", "106-22-9"],
-      ["Coumarin", "91-64-5"],
-      ["Eugenol", "97-53-0"],
-      ["Evernia Furfuracea Extract", "90028-67-4"],
-      ["Evernia Prunastri Extract", "90028-68-5"],
-      ["Farnesol", "4602-84-0"],
-      ["Geraniol", "106-24-1"],
-      ["Hexyl Cinnamal", "101-86-0"],
-      ["Hydroxycitronellal", "107-75-5"],
-      ["Isoeugenol", "97-54-1"],
-      ["Limonene", "5989-27-5"],
-      ["Linalool", "78-70-6"],
-      ["Methyl 2-Octynoate", "111-12-6"]
-    ].sort((a, b) => a[0].localeCompare(b[0]));
-
-    function switchMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.mode-buttons button').forEach((btn, idx) => {
-        btn.classList.toggle('active', idx === mode - 1);
-      });
-      document.getElementById("fragranceLabel").style.display = (mode === 1) ? 'block' : 'none';
-      document.getElementById("fragranceALabel").style.display = (mode >= 2) ? 'block' : 'none';
-      document.getElementById("fragranceBLabel").style.display = (mode >= 2) ? 'block' : 'none';
-      document.getElementById("fragranceCLabel").style.display = (mode === 3) ? 'block' : 'none';
-
-      document.querySelectorAll('.col-single').forEach(e => e.style.display = (mode === 1) ? '' : 'none');
-      document.querySelectorAll('.col-double').forEach(e => e.style.display = (mode === 2) ? '' : 'none');
-      document.querySelectorAll('.col-triple').forEach(e => e.style.display = (mode === 3) ? '' : 'none');
-
-      generateTable();
-    }
-
-    function generateTable() {
-      const tbody = document.getElementById("allergenTableBody");
-      tbody.innerHTML = "";
-      allergens.forEach((item, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item[0]}</td>
-          <td>${item[1]}</td>
-          <td class="col-single" style="display:${currentMode === 1 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="single-${index}" style="width:60px">
-          </td>
-          <td class="col-double" style="display:${currentMode === 2 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="a-${index}" style="width:60px">
-          </td>
-          <td class="col-double" style="display:${currentMode === 2 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="b-${index}" style="width:60px">
-          </td>
-          <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="triple-a-${index}" style="width:60px">
-          </td>
-          <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="triple-b-${index}" style="width:60px">
-          </td>
-          <td class="col-triple" style="display:${currentMode === 3 ? '' : 'none'}">
-            <input type="number" step="0.0001" min="0" id="triple-c-${index}" style="width:60px">
-          </td>
-          <td id="final-${index}">--</td>
-          <td id="result-${index}">--</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
-
-    function analyzeAllergens() {
-      const type = document.getElementById("productType").value;
-      const threshold = type === "leaveon" ? 0.001 : 0.01;
-      const results = [];
-
-      allergens.forEach((item, index) => {
-        let total = 0;
-        if (currentMode === 1) {
-          const percent = parseFloat(document.getElementById("fragrancePercent").value) || 0;
-          const singleVal = parseFloat(document.getElementById(`single-${index}`).value) || 0;
-          total = singleVal * percent / 100;
-        } else if (currentMode === 2) {
-          const percentA = parseFloat(document.getElementById("percentA").value) || 0;
-          const percentB = parseFloat(document.getElementById("percentB").value) || 0;
-          const aVal = parseFloat(document.getElementById(`a-${index}`).value) || 0;
-          const bVal = parseFloat(document.getElementById(`b-${index}`).value) || 0;
-          total = (aVal * percentA + bVal * percentB) / 100;
-        } else if (currentMode === 3) {
-          const percentA = parseFloat(document.getElementById("percentA").value) || 0;
-          const percentB = parseFloat(document.getElementById("percentB").value) || 0;
-          const percentC = parseFloat(document.getElementById("percentC").value) || 0;
-          const aVal = parseFloat(document.getElementById(`triple-a-${index}`).value) || 0;
-          const bVal = parseFloat(document.getElementById(`triple-b-${index}`).value) || 0;
-          const cVal = parseFloat(document.getElementById(`triple-c-${index}`).value) || 0;
-          total = (aVal * percentA + bVal * percentB + cVal * percentC) / 100;
-        }
-
-        document.getElementById(`final-${index}`).innerText = total.toFixed(4);
-        const needLabel = total >= threshold;
-        document.getElementById(`result-${index}`).innerHTML =
-          needLabel ? '<span class="need-label">需標示</span>' : '<span class="no-label">無需標示</span>';
-        if (needLabel) results.push(item[0]);
-      });
-
-      document.getElementById("resultList").innerText = results.length ? results.join(", ") : "無需標示成分";
-    }
-
-    function copyToClipboard() {
-      const text = document.getElementById("resultList").innerText;
-      navigator.clipboard.writeText(text).then(() => alert("已複製到剪貼簿"));
-    }
-
-    switchMode(1);
-  </script>
+  <div class="footer">
+    © 2025 馨研有限公司 Scentar｜聯絡信箱：nicolehsu1103@gmail.com
+  </div>
 </body>
 </html>
+
